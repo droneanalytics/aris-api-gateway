@@ -47,14 +47,14 @@ def init_mongo_client():
 
 
 def get_class_id(client, class_label, org_id):
-    # Get the damageLabelData collection from the droneanalytics database
-    damageLabelData = client[org_id]["damageLabelData"]
+    # Get the damage_label_data collection from the droneanalytics database
+    damage_label_data = client[org_id]["damageLabelData"]
     class_slug = class_label.lower().replace(" ", "-")
     # print("looking for:", class_label.lower().replace(" ", "-"))
-    # Search for a document in the damageLabelData collection where the slug is equal to the class_label
-    existing_doc = damageLabelData.find_one({"label": class_label})
+    # Search for a document in the damage_label_data collection where the slug is equal to the class_label
+    existing_doc = damage_label_data.find_one({"label": class_label})
 
-    max_class_id_doc = damageLabelData.find_one(sort=[("classId", -1)])
+    max_class_id_doc = damage_label_data.find_one(sort=[("classId", -1)])
     max_class_id = max_class_id_doc["classId"] if max_class_id_doc else 0
 
     if existing_doc:
@@ -62,7 +62,7 @@ def get_class_id(client, class_label, org_id):
         if "classId" not in existing_doc:
             max_class_id = max_class_id + 1
             print("adding class_id", max_class_id, class_label)
-            damageLabelData.update_one(
+            damage_label_data.update_one(
                 {"label": class_label},
                 {"$set": {"slug": class_slug, "classId": max_class_id}},
             )
@@ -70,12 +70,12 @@ def get_class_id(client, class_label, org_id):
         # If a document is found, return the class_id from that document
         return existing_doc["classId"]
     else:
-        # If no document is found, find the current maximum class_id in damageLabelData
+        # If no document is found, find the current maximum class_id in damage_label_data
         # Increment the max_class_id to create a new unique class_id
         max_class_id = max_class_id + 1
 
         print("adding new class", class_label, class_slug, max_class_id)
-        damageLabelData.insert_one(
+        damage_label_data.insert_one(
             {
                 "label": class_label,
                 "slug": class_label.lower().replace(" ", "-"),

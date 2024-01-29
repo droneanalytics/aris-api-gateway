@@ -1,4 +1,3 @@
-# import runpod
 import os
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
@@ -47,7 +46,7 @@ def run_inference_api():
         - image_name: Name of the image to run inference on
     """
     try:
-        incoming_data = request.json
+        incoming_data = request.jsona
         if not incoming_data:
             print("Missing JSON payload.")
             return (
@@ -111,20 +110,15 @@ def train_api():
             HTTP_INTERNAL_SERVER_ERROR,
         )
 
+@app.route("/start_model", methods=["POST"])
+def start_api():
+    # Template function for starting model until implemented, for now just returns 200
+    return jsonify({"message": "Model started successfully."}), 200
+
+@app.route("/stop_model", methods=["POST"])
+def stop_api():
+    # Template function for stopping model until implemented, for now just returns 200
+    return jsonify({"message": "Model stopped successfully."}), 200
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
-
-# runpod.api_key = 'VVS537VDGN'
-
-# print("Runpod API Key:", runpod.api_key)
-
-# # # Get all my pods
-# # pods = runpod.get_pods()
-
-# # print(pods)
-
-
-# # Create a pod
-# pod = runpod.create_pod("test", "runpod/stack", "NVIDIA GeForce RTX 3070")
-
-# print(pod)
