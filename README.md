@@ -152,13 +152,7 @@ This section provides a guide on managing and accessing the 'api_session' screen
                         "Height": ...,
                         "Left": ...,
                         "Top": ...
-                    },
-                    "Polygon": [
-                        {
-                            "X": ...,
-                            "Y": ...
-                        }
-                    ]
+                    }
                 }
             }
         ]
