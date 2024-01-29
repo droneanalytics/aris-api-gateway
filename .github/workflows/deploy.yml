@@ -14,7 +14,7 @@ jobs:
         with:
           host: ${{ secrets.SERVER_IP }}
           username: root
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.SSH_PASSWORD }}
           port: 22
           envs: DB_HOST,DB_USER,DB_PASS,AWS_REGION,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY
           script: |
