@@ -59,9 +59,9 @@ This section provides a guide on managing and accessing the 'api_session' screen
 
 #### **Connecting to the Virtual Environment**
 
-1. Navigate to the 'drone-detections' directory:
+1. Navigate to the 'aris-api-gateway' directory:
    ```bash
-   cd drone-detections
+   cd aris-api-gateway
    ```
 2. Activate the virtual environment:
    ```bash
@@ -72,9 +72,9 @@ This section provides a guide on managing and accessing the 'api_session' screen
 
 #### **Hosting the Flask Application**
 
-1. Navigate to the 'drone-detections' directory:
+1. Navigate to the 'aris-api-gateway' directory:
    ```bash
-   cd drone-detections
+   cd aris-api-gateway
    ```
 2. Start or reattach to the 'api_session' screen session:
    ```bash
