@@ -18,7 +18,7 @@ jobs:
           port: 22
           envs: DB_HOST,DB_USER,DB_PASS,AWS_REGION,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY
           script: |
-            cd /var/www/aris-api-gateway
+            cd aris-api-gateway
             git pull origin master
             pip install
             echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
