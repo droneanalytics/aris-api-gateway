@@ -87,7 +87,6 @@ def update_training_flag(client, org_id, property_id):
     collection = db["properties"]
     # get property specified by property_id
     property_id = ObjectId(property_id)
-    property = collection.find_one({"_id": property_id})
 
     # update usedInTraining to True
     collection.update_one({"_id": property_id}, {"$set": {"usedInTraining": True}})
@@ -98,7 +97,6 @@ def update_project_name(client, org_id, project_name):
     collection = db["org"]
     # get org specified by org_id
     org_id = ObjectId(org_id)
-    org = collection.find_one({"_id": org_id})
 
     # update projectName field
     collection.update_one({"_id": org_id}, {"$set": {"projectName": project_name}})
@@ -110,7 +108,7 @@ def update_model_name(client, org_id, model_name):
     collection = db["org"]
     # get org specified by org_id
     org_id = ObjectId(org_id)
-    org = collection.find_one({"_id": org_id})
+
 
     # update projectName field
     collection.update_one({"_id": org_id}, {"$set": {"modelName": model_name}})
@@ -122,7 +120,7 @@ def update_model_arn(client, org_id, model_arn):
     collection = db["org"]
     # get org specified by org_id
     org_id = ObjectId(org_id)
-    org = collection.find_one({"_id": org_id})
+
 
     # update modelArn field
     collection.update_one({"_id": org_id}, {"$set": {"modelArn": model_arn}})
