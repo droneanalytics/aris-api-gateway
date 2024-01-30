@@ -7,3 +7,4 @@ pymongo==3.12.1
 matplotlib==3.4.3
 numpy==1.21.2
 Werkzeug==2.0
+Gunicorn==20.1.0
