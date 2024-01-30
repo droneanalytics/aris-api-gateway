@@ -9,32 +9,25 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Execute remote SSH commands
+        uses: appleboy/ssh-action@master
         with:
-          python-version: 3.x
-
-      - name: Install dependencies
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements.txt
-
-      - name: Update environment variables
-        run: |
-          rm -rf .env
-          touch .env
-          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
-          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-          echo "DB_PASS=${{ secrets.DB_PASS }}" >> .env
-          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
-          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
-
-      - name: Restart Gunicorn
-        run: |
-          pkill -f "gunicorn -w 3 main:app" || true
-          nohup gunicorn -w 3 main:app > gunicorn.log 2>&1 &
+          host: ${{ secrets.SERVER_IP }}
+          username: root
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: 22
+          envs: DB_HOST,DB_USER,DB_PASS,AWS_REGION,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY
+          script: |
+            cd aris-api-gateway
+            git pull origin master
+            python -m venv venv
+            source venv/bin/activate
+            pip install -r requirements.txt
+            rm -rf .env
+            touch .env
+            echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+            echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+            echo "DB_PASS=${{ secrets.DB_PASS }}" >> .env
+            echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
+            echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
