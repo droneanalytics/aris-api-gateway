@@ -52,7 +52,7 @@ def run_inference_api():
         - image_name: Name of the image to run inference on
     """
     try:
-        incoming_data = request.json
+        incoming_data = request.jsona
         if not incoming_data:
             print("Missing JSON payload.")
             return (
