@@ -52,8 +52,6 @@ def run_inference_api():
         - image_name: Name of the image to run inference on
     """
     try:
-        print("test")
-        print(runpod_ip + "/run_inference")
         incoming_data = request.json
         if not incoming_data:
             print("Missing JSON payload.")

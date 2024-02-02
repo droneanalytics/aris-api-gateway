@@ -24,7 +24,7 @@ Before starting any operation, if accessing remotely, SSH into the Linux server.
 
 #### **Accessing the 'api_session' Screen Session**
 
-This section provides a guide on managing and accessing the 'api_session' screen session where the 'api_main.py' Flask application is running.
+This section provides a guide on managing and accessing the 'api_session' screen session where the 'main.py' Flask application is running.
 
 - **Starting the Screen Session**
   
@@ -32,9 +32,9 @@ This section provides a guide on managing and accessing the 'api_session' screen
      ```bash
      screen -S api_session
      ```
-  2. Inside the 'screen' session, navigate to the directory containing 'api_main.py' and run the Flask application:
+  2. Inside the 'screen' session, navigate to the directory containing 'main.py' and run the Flask application:
      ```bash
-     python3 api_main.py
+     python3 main.py
      ```
 
 - **Detaching from the Screen Session**
@@ -88,9 +88,9 @@ This section provides a guide on managing and accessing the 'api_session' screen
    ```bash
    pip install -r requirements.txt
    ```
-5. Inside the 'screen' session, navigate to the directory containing 'api_main.py' and run the Flask application:
+5. Inside the 'screen' session, navigate to the directory containing 'main.py' and run the Flask application:
    ```bash
-   python api_main.py
+   python main.py
    ```
 6. Detach from the screen session using 'Ctrl + A + D'.
 
