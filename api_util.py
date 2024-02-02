@@ -8,7 +8,16 @@ import numpy as np
 import json
 from concurrent.futures import ThreadPoolExecutor
 import io
+import runpod
 
+def init_runpod_client():
+    load_dotenv()
+    runpod.api_key = os.getenv("RUNPOD_API_KEY")
+
+    if not runpod.api_key:
+        raise ValueError("RunPod API Key not set properly")
+
+    return runpod
 
 # Initialize AWS services and return rekognition and s3 clients
 def init_aws_services():
@@ -32,14 +41,12 @@ def init_aws_services():
 def init_mongo_client():
     load_dotenv()
     try:
-        db_host = os.getenv("DB_HOST")
-        db_user = os.getenv("DB_USER")
-        db_pass = os.getenv("DB_PASS")
+        db_uri = os.getenv("DB_URI")
 
-        if not db_host or not db_user or not db_pass:
-            raise ValueError("Database credentials are not set properly")
+        if not db_uri:
+            raise ValueError("Database URI not set properly")
 
-        client = MongoClient(f"mongodb+srv://{db_user}:{db_pass}@{db_host}/?retryWrites=true&w=majority")
+        client = MongoClient(db_uri)
         return client
 
     except Exception as e:

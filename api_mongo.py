@@ -1,6 +1,5 @@
 from bson import ObjectId
 
-
 def get_model_arn(client, org_id):
     print("Getting model ARN")
     try:

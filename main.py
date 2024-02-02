@@ -1,4 +1,5 @@
 import os
+import runpod
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 import requests
@@ -9,6 +10,7 @@ from api_util import (
     upload_manifest,
     init_mongo_client,
     get_manifest_from_s3,
+    init_runpod_client,
 )
 from api_mongo import (
     get_model_arn,
@@ -31,9 +33,13 @@ from error_codes import (
 # Load environment variables
 load_dotenv()
 
+# Init runpod client
+runpod.api_key = os.getenv("RUNPOD_API_KEY")
+pod_id = os.getenv("POD_ID")
+
 app = Flask(__name__)
 
-RUNPOD_IP = "https://6rd3pdsxlbr7a5-4000.proxy.runpod.net"
+runpod_ip = os.getenv("RUNPOD_IP")
 
 @app.route("/run_inference", methods=["POST"])
 def run_inference_api():
@@ -46,7 +52,9 @@ def run_inference_api():
         - image_name: Name of the image to run inference on
     """
     try:
-        incoming_data = request.jsona
+        print("test")
+        print(runpod_ip + "/run_inference")
+        incoming_data = request.json
         if not incoming_data:
             print("Missing JSON payload.")
             return (
@@ -55,7 +63,7 @@ def run_inference_api():
             )
 
         # Forward the request to RunPod endpoint
-        response = requests.post(RUNPOD_IP + "/run_inference", json=incoming_data)
+        response = requests.post(runpod_ip + "/run_inference", json=incoming_data)
 
         # Check if the request was successful
         if response.status_code == 200:
@@ -88,7 +96,7 @@ def train_api():
             )
 
         # Forward the request to RunPod endpoint
-        response = requests.post(RUNPOD_IP + "/train_model", json=incoming_data)
+        response = requests.post(runpod_ip + "/train_model", json=incoming_data)
 
         # Check if the request was successful
         if response.status_code == 200:
@@ -111,14 +119,14 @@ def train_api():
         )
 
 @app.route("/start_model", methods=["POST"])
-def start_api():
-    # Template function for starting model until implemented, for now just returns 200
-    return jsonify({"message": "Model started successfully."}), 200
+def start_model():
+    resume = runpod.resume_pod(pod_id=pod_id, gpu_count=1)
+    return jsonify({"message": resume}), 200
 
 @app.route("/stop_model", methods=["POST"])
-def stop_api():
-    # Template function for stopping model until implemented, for now just returns 200
-    return jsonify({"message": "Model stopped successfully."}), 200
+def stop_model():
+    stop = runpod.stop_pod(pod_id)
+    return jsonify({"message": stop}), 200
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
