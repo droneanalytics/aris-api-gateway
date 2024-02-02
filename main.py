@@ -3,24 +3,6 @@ import runpod
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 import requests
-from api_util import (
-    add_images_to_s3,
-    get_image_from_s3,
-    init_aws_services,
-    upload_manifest,
-    init_mongo_client,
-    get_manifest_from_s3,
-    init_runpod_client,
-)
-from api_mongo import (
-    get_model_arn,
-    get_project_name,
-    get_model_name,
-    update_project_name,
-    update_model_name,
-    update_model_arn,
-    get_training_properties,
-)
 from error_codes import (
     HTTP_BAD_REQUEST,
     HTTP_CONFLICT,
@@ -52,7 +34,7 @@ def run_inference_api():
         - image_name: Name of the image to run inference on
     """
     try:
-        incoming_data = request.jsona
+        incoming_data = request.json
         if not incoming_data:
             print("Missing JSON payload.")
             return (

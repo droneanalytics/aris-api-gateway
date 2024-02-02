@@ -16,7 +16,7 @@ jobs:
           username: root
           password: ${{ secrets.SSH_PASSWORD }}
           port: 22
-          envs: DB_URI,AWS_REGION,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY
+          envs: DB_URI, POD_ID, RUNPOD_API_KEY, RUNPOD_IP
           script: |
             cd aris-api-gateway
             git pull origin main
@@ -26,8 +26,8 @@ jobs:
             rm -rf .env
             touch .env
             echo "DB_URI=${{ secrets.DB_URI }}" >> .env
-            echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
-            echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
-            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+            echo "POD_ID"=${{ secrets.POD_ID }}" >> .env
+            echo "RUNPOD_API_KEY=${{ secrets.RUNPOD_API_KEY }}" >> .env
+            echo "RUNPOD_IP=${{ secrets.RUNPOD_IP }}" >> .env
             nohup python main.py > output.log 2>&1 &
             disown
