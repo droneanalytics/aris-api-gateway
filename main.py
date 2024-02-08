@@ -35,13 +35,14 @@ def run_inference_api():
     """
     try:
         incoming_data = request.json
+        print(incoming_data)
         if not incoming_data:
             print("Missing JSON payload.")
             return (
                 jsonify({"message": ERR_MISSING_JSON_PAYLOAD}),
                 HTTP_BAD_REQUEST,
             )
-
+        print(runpod_ip + "/run_inference")
         # Forward the request to RunPod endpoint
         response = requests.post(runpod_ip + "/run_inference", json=incoming_data)
 
@@ -100,12 +101,28 @@ def train_api():
 
 @app.route("/start_model", methods=["POST"])
 def start_model():
-    resume = runpod.resume_pod(pod_id=pod_id, gpu_count=1)
-    return jsonify({"message": resume}), 200
+    # resume = runpod.resume_pod(pod_id=pod_id, gpu_count=1)
+    docker_args = """bash -c 'apt update;DEBIAN_FRONTEND=noninteractive apt-get install openssh-server -y;mkdir -p ~/.ssh;cd $_;chmod 700 ~/.ssh;echo '$PUBLIC_KEY' >> authorized_keys;chmod 700 authorized_keys;cd /mmdetection;pip install -e .;cd app;pip install -r requirements.txt;cd ..;service ssh start;cd /mmdetection/app;uvicorn main:app --host 0.0.0.0 --port 4000'"""
+    
+    pod = runpod.create_pod(
+        name="aris-runpod", 
+        image_name="arken22/aris:runpod", 
+        gpu_type_id="NVIDIA GeForce RTX 4090", 
+        cloud_type="SECURE", 
+        container_disk_in_gb=5, 
+        docker_args=docker_args,
+        ports="4000/http,22/tcp,43201/tcp", 
+        volume_mount_path="/mmdetection", 
+        template_id="u228fcbb71", 
+        network_volume_id="wcuy34u9z9")
+    # Get pod id
+    global pod_id
+    pod_id = pod["id"]
+    return jsonify({"message": pod}), 200
 
 @app.route("/stop_model", methods=["POST"])
 def stop_model():
-    stop = runpod.stop_pod(pod_id)
+    stop = runpod.terminate_pod(pod_id)
     return jsonify({"message": stop}), 200
 
 if __name__ == "__main__":
