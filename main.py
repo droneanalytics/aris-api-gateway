@@ -17,11 +17,11 @@ load_dotenv()
 
 # Init runpod client
 runpod.api_key = os.getenv("RUNPOD_API_KEY")
-pod_id = os.getenv("POD_ID")
 
 app = Flask(__name__)
 
-runpod_ip = os.getenv("RUNPOD_IP")
+global pod_id
+global runpod_ip
 
 @app.route("/run_inference", methods=["POST"])
 def run_inference_api():
@@ -101,6 +101,8 @@ def train_api():
 
 @app.route("/start_model", methods=["POST"])
 def start_model():
+    global pod_id
+    global runpod_ip
     # resume = runpod.resume_pod(pod_id=pod_id, gpu_count=1)
     docker_args = """bash -c 'apt update;DEBIAN_FRONTEND=noninteractive apt-get install openssh-server -y;mkdir -p ~/.ssh;cd $_;chmod 700 ~/.ssh;echo '$PUBLIC_KEY' >> authorized_keys;chmod 700 authorized_keys;cd /mmdetection;pip install -e .;cd app;pip install -r requirements.txt;cd ..;service ssh start;cd /mmdetection/app;uvicorn main:app --host 0.0.0.0 --port 4000'"""
     
@@ -116,12 +118,13 @@ def start_model():
         template_id="u228fcbb71", 
         network_volume_id="wcuy34u9z9")
     # Get pod id
-    global pod_id
     pod_id = pod["id"]
+    runpod_ip = f"https://{pod_id}-4000.proxy.runpod.net"
     return jsonify({"message": pod}), 200
 
 @app.route("/stop_model", methods=["POST"])
 def stop_model():
+    global pod_id
     stop = runpod.terminate_pod(pod_id)
     return jsonify({"message": stop}), 200
 
