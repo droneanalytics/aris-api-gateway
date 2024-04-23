@@ -70,6 +70,45 @@ This section provides a guide on managing and accessing the 'api_session' screen
 
 ---
 
+#### **Managing Redis and Celery**
+
+- **Redis Installation and Setup**
+  1. Install Redis on the server:
+     ```bash
+     sudo apt-get install redis-server
+     ```
+  2. Start the Redis service:
+     ```bash
+     sudo systemctl start redis.service
+     ```
+  3. Verify Redis is running:
+     ```bash
+     redis-cli ping
+     ```
+
+- **Running Celery Worker**
+  1. Start a screen session for Celery worker:
+     ```bash
+     screen -S celery_worker
+     ```
+  2. Run the Celery worker inside the screen session:
+     ```bash
+     celery -A tasks worker --loglevel=info
+     ```
+  3. Detach from the screen session:
+     Press 'Ctrl + A' followed by 'D'.
+
+- **Monitoring Celery Tasks with Flower**
+  1. Start Celery Flower in a new screen session:
+     ```bash
+     screen -S flower
+     celery -A tasks flower
+     ```
+  2. Detach from the screen session:
+     Press 'Ctrl + A' followed by 'D'.
+
+---
+
 #### **Hosting the Flask Application**
 
 1. Navigate to the 'aris-api-gateway' directory:
@@ -98,98 +137,40 @@ This section provides a guide on managing and accessing the 'api_session' screen
 
 #### **API Endpoints**
 
----
-
-- **Start the Model**
-
-  - **Endpoint:** ```/start_model```
-  - **Method:** `POST`
-  - **Body:**
-    ```json
+```json
+{
+  "Endpoints": [
     {
+      "Description": "Start the Model",
+      "Method": "POST",
+      "Body": {
         "org_id": "<org-id>"
-    }
-    ```
-  - **Description:** Initializes AWS services and MongoDB client and starts the model for the given organization ID.
-
----
-
-- **Stop the Model**
-
-  - **Endpoint:** ```/stop_model```
-  - **Method:** `POST`
-  - **Body:**
-    ```json
+      }
+    },
     {
+      "Description": "Stop the Model",
+      "Method": "POST",
+      "Body": {
         "org_id": "<org-id>"
-    }
-    ```
-  - **Description:** Initializes AWS services and MongoDB client and stops the model for the given organization ID.
-
----
-
-- **Run Inference**
-
-  - **Endpoint:** ```/run_inference```
-  - **Method:** `POST`
-  - **Body:**
-    ```json
+      }
+    },
     {
-        "model_arn": "<model-arn>",
-        "s3_path": "<s3-image-path>"
-    }
-    ```
-  - **Response:**
-    ```json
+      "Description": "Run Inference",
+      "Method": "POST",
+      "Body": {
+        "inference_id": "<inference-id>",
+        "domain": "<domain>"
+      }
+    },
     {
-        "CustomLabels": [
-            {
-                "Name": "string",
-                "Confidence": ...,
-                "Geometry": {
-                    "BoundingBox": {
-                        "Width": ...,
-                        "Height": ...,
-                        "Left": ...,
-                        "Top": ...
-                    }
-                }
-            }
-        ]
-    }
-    ```
-  - **Errors:**
-    - 400: Missing JSON payload or required parameter.
-    - 409: Model is currently in training.
-    - 500: An unspecified error occurred.
-  - **Description:** Runs inference on an image using AWS Rekognition's custom labels feature.
-
----
-
-- **Train Model**
-
-  - **Endpoint:** ```/train_model```
-  - **Method:** `POST`
-  - **Body:**
-    ```json
-    {
+      "Description": "Train Model",
+      "Method": "POST",
+      "Body": {
         "org_id": "<org-id>"
+      }
     }
-    ```
-  - **Description:** Initializes AWS services and MongoDB client, and triggers the training process for the model associated with the given organization ID.
-
----
-
-- **Create Project**
-
-  - **Endpoint:** ```/create_project```
-  - **Method:** `POST`
-  - **Body:**
-    ```json
-    {
-        "org_id": "<org-id>"
-    }
-    ```
-  - **Description:** Initializes AWS services and MongoDB client, and creates a new project for the given organization ID.
+  ]
+}
+```
 
 ---

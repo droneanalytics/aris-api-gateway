@@ -1,8 +1,10 @@
-import os
 import runpod
 from flask import Flask, request, jsonify
-from dotenv import load_dotenv
+import os
 import requests
+from celery import Celery
+from dotenv import load_dotenv
+from requests.exceptions import RequestException
 from error_codes import (
     HTTP_BAD_REQUEST,
     HTTP_CONFLICT,
@@ -10,60 +12,57 @@ from error_codes import (
     ERR_MISSING_JSON_PAYLOAD,
     ERR_MISSING_PARAM,
     ERR_GENERAL_EXCEPTION,
+    ERR_MISSING_REQUIRED_FIELDS
 )
-#
+import redis
+# Import Celery instance
+from celery_app import celery
+from tasks import send_request_to_runpod
+
 # Load environment variables
 load_dotenv()
 
+# Initialise Celery
+app = Flask(__name__)
 # Init runpod client
 runpod.api_key = os.getenv("RUNPOD_API_KEY")
-
-app = Flask(__name__)
+# Init redis
+r = redis.Redis(host='localhost', port=6379, db=0)
 
 global pod_id
+pod_id = "pod_id"
 global runpod_ip
+runpod_ip = f"https://{pod_id}-4000.proxy.runpod.net"
+r.set('runpod_ip', runpod_ip)
+
+# Endpoint to check the status of a task
+@app.route("/task_status/<task_id>", methods=["GET"])
+def task_status(task_id):
+    task = celery.AsyncResult(task_id)
+    return jsonify({
+        'status': task.status,
+        'result': task.result
+    })
 
 @app.route("/run_inference", methods=["POST"])
 def run_inference_api():
-    """
-    Gateway to forward requests to the RunPod container and return the response.
-
-    Request Parameters (JSON payload):
-        - org_id: Organization ID
-        - property_id: Property ID
-        - image_name: Name of the image to run inference on
-    """
     try:
         incoming_data = request.json
-        print(incoming_data)
         if not incoming_data:
-            print("Missing JSON payload.")
-            return (
-                jsonify({"message": ERR_MISSING_JSON_PAYLOAD}),
-                HTTP_BAD_REQUEST,
-            )
-        print(runpod_ip + "/run_inference")
-        # Forward the request to RunPod endpoint
-        response = requests.post(runpod_ip + "/run_inference", json=incoming_data)
+            print("No data received")
+            return jsonify({"message": ERR_MISSING_JSON_PAYLOAD}), HTTP_BAD_REQUEST
 
-        # Check if the request was successful
-        if response.status_code == 200:
-            print("RunPod request successful.")
-            # Return the response from the RunPod endpoint
-            return jsonify(response.json())
-        else:
-            print("RunPod request failed.")
-            # Forward any error messages from the RunPod endpoint
-            return (
-                jsonify(response.json()),
-                response.status_code,
-            )
+        if "inference_id" not in incoming_data or "domain" not in incoming_data:
+            print("Required fields missing")
+            return jsonify({"message": ERR_MISSING_REQUIRED_FIELDS}), HTTP_BAD_REQUEST
+
+        task = send_request_to_runpod.apply_async(args=[incoming_data])
+        print(f"Task {task.id} enqueued")
+        return jsonify({"message": "Request enqueued", "task_id": task.id}), 202
 
     except Exception as e:
-        return (
-            jsonify({"message": ERR_GENERAL_EXCEPTION.format(str(e))}),
-            HTTP_INTERNAL_SERVER_ERROR,
-        )
+        print(f"Exception: {str(e)}")
+        return jsonify({"message": ERR_GENERAL_EXCEPTION.format(str(e))}), HTTP_INTERNAL_SERVER_ERROR
 
 @app.route("/train_model", methods=["POST"])
 def train_api():
@@ -103,9 +102,7 @@ def train_api():
 def start_model():
     global pod_id
     global runpod_ip
-    # resume = runpod.resume_pod(pod_id=pod_id, gpu_count=1)
-    docker_args = """bash -c 'apt update;DEBIAN_FRONTEND=noninteractive apt-get install openssh-server -y;mkdir -p ~/.ssh;cd $_;chmod 700 ~/.ssh;echo '$PUBLIC_KEY' >> authorized_keys;chmod 700 authorized_keys;cd /mmdetection;pip install -e .;cd app;pip install -r requirements.txt;cd ..;service ssh start;cd /mmdetection/app;uvicorn main:app --host 0.0.0.0 --port 4000'"""
-    
+    docker_args = """bash -c 'apt update;DEBIAN_FRONTEND=noninteractive apt-get install openssh-server -y;mkdir -p ~/.ssh;cd $_;chmod 700 ~/.ssh;echo '$PUBLIC_KEY' >> authorized_keys;chmod 700 authorized_keys;cd /mmdetection;pip install -e .;cd app;pip install -r requirements.txt;cd ..;service ssh start;sleep infinity'"""
     pod = runpod.create_pod(
         name="aris-runpod", 
         image_name="arken22/aris:runpod", 
@@ -120,6 +117,8 @@ def start_model():
     # Get pod id
     pod_id = pod["id"]
     runpod_ip = f"https://{pod_id}-4000.proxy.runpod.net"
+    r.set('runpod_ip', runpod_ip)
+    print(runpod_ip)
     return jsonify({"message": pod}), 200
 
 @app.route("/stop_model", methods=["POST"])
