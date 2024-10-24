@@ -107,6 +107,7 @@ This section provides a guide on managing and accessing the 'api_session' screen
   2. Detach from the screen session:
      Press 'Ctrl + A' followed by 'D'.
 
+You can visit http://0.0.0.0:5555 to monitor the Celery tasks using Flower.
 ---
 
 #### **Hosting the Flask Application**

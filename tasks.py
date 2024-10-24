@@ -10,6 +10,9 @@ def send_request_to_runpod(self, data):
     print(runpod_ip)
     url = f"{runpod_ip}/run_inference"
 
+    # Include the Celery task ID in the request data
+    data['task_id'] = self.request.id
+
     try:
         response = requests.post(url, json=data)
         if response.status_code == 200:

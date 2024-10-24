@@ -5,3 +5,5 @@ boto3
 Werkzeug
 runpod==1.6.0
 celery
+redis
+gunicorn
